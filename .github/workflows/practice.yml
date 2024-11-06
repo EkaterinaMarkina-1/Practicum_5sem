@@ -1,4 +1,4 @@
-name: TestRegression
+name: Test Practice Labs
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
       - "lab**"
   pull_request:
     types: [opened, reopened]
-
   workflow_dispatch:
     inputs:
       environment:
@@ -23,28 +22,30 @@ jobs:
     name: Regression tests
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright/python:v1.41.0-jammy
+      image: mcr.microsoft.com/playwright/python:v1.47.0-jammy
     env:
       AUTH_LOGIN: ${{ secrets.AUTH_LOGIN }}
       AUTH_PASSWORD: ${{ secrets.AUTH_PASSWORD }}
     strategy:
       matrix:
         browser: [remote_chrome]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-
-      - name: Run tests
-        id: pytest
-        run: |
-          pytest --env-name=my-env
-
-      - name: Set output
-        run: echo "env_name=my-env" >> $GITHUB_ENV
-
     outputs:
       env_name: ${{ steps.pytest.outputs.env_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python3 -m pip install -r requirements.txt
+      - run: |
+          if [ "${{github.event_name}}" = "workflow_dispatch" ]; then
+            export ENV='${{github.event.inputs.environment}}'
+            export args='${{github.event.inputs.arguments}}'
+          else
+            export ENV="prod"
+            export args="-m regression"
+          fi
+            echo "env_name::${ENV:-prod}"
+            pytest ${args} --bn ${{ matrix.browser }}
