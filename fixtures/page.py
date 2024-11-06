@@ -21,7 +21,7 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope='class')
-def browser(request) -> Page:
+def browser(request) -> Page:  # type: ignore
     playwright = sync_playwright().start()
     if request.config.getoption("bn") == 'remote_chrome':
         browser = get_remote_chrome(playwright, request)
