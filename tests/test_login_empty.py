@@ -3,7 +3,7 @@ from pages.login_page import LoginPage
 from data.utils import Error_messeges
 
 
-@pytest.mark.smoke
+@pytest.mark.regression
 class TestLoginEmpty:
     def test_user_login_empty(self, browser):
         m = LoginPage(browser)
